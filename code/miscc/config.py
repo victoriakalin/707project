@@ -61,7 +61,7 @@ def _merge_a_into_b(a, b):
     if type(a) is not edict:
         return
 
-    for k, v in a.tems():
+    for k, v in a.items():
         # a must specify keys that are in b
         if not k in b:
             raise KeyError('{} is not a valid config key'.format(k))
