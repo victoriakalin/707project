@@ -20,8 +20,8 @@ from miscc.utils import save_img_results, save_model
 from miscc.utils import KL_loss
 from miscc.utils import compute_discriminator_loss, compute_generator_loss
 
-from tensorboard import summary
-from tensorboard import FileWriter
+# from tensorboard import summary
+# from tensorboard import FileWriter
 
 
 class GANTrainer(object):
