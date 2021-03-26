@@ -264,7 +264,7 @@ class GANTrainer(object):
                 iend = num_embeddings
                 count = num_embeddings - batch_size
             embeddings_batch = embeddings[count:iend]
-            # captions_batch = captions_list[count:iend]
+            captions_batch = captions_list[count:iend]
             txt_embedding = Variable(torch.FloatTensor(embeddings_batch))
             if cfg.CUDA:
                 txt_embedding = txt_embedding.cuda()
@@ -277,6 +277,7 @@ class GANTrainer(object):
             _, fake_imgs, mu, logvar = \
                 nn.parallel.data_parallel(netG, inputs, self.gpus)
             for i in range(batch_size):
+                print(count+i, captions_batch[i])
                 save_name = '%s/%d.png' % (save_dir, count + i)
                 im = fake_imgs[i].data.cpu().numpy()
                 im = (im + 1.0) * 127.5
