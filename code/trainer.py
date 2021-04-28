@@ -197,19 +197,19 @@ class GANTrainer(object):
 
                 count = count + 1
                 if i % 100 == 0:
-                    summary_D = summary.scalar('D_loss', errD.data[0])
-                    summary_D_r = summary.scalar('D_loss_real', errD_real)
-                    summary_D_w = summary.scalar('D_loss_wrong', errD_wrong)
-                    summary_D_f = summary.scalar('D_loss_fake', errD_fake)
-                    summary_G = summary.scalar('G_loss', errG.data[0])
-                    summary_KL = summary.scalar('KL_loss', kl_loss.data[0])
+                    self.summary_writer.add_scalar('D_loss', errD.data.item())
+                    self.summary_writer.add_scalar('D_loss_real', errD_real)
+                    self.summary_writer.add_scalar('D_loss_wrong', errD_wrong)
+                    self.summary_writer.add_scalar('D_loss_fake', errD_fake)
+                    self.summary_writer.add_scalar('G_loss', errG.data.item())
+                    self.summary_writer.add_scalar('KL_loss', kl_loss.data.item())
 
-                    self.summary_writer.add_summary(summary_D, count)
-                    self.summary_writer.add_summary(summary_D_r, count)
-                    self.summary_writer.add_summary(summary_D_w, count)
-                    self.summary_writer.add_summary(summary_D_f, count)
-                    self.summary_writer.add_summary(summary_G, count)
-                    self.summary_writer.add_summary(summary_KL, count)
+                    # self.summary_writer.add_summary(summary_D, count)
+                    # self.summary_writer.add_summary(summary_D_r, count)
+                    # self.summary_writer.add_summary(summary_D_w, count)
+                    # self.summary_writer.add_summary(summary_D_f, count)
+                    # self.summary_writer.add_summary(summary_G, count)
+                    # self.summary_writer.add_summary(summary_KL, count)
 
                     # save the image result for each epoch
                     inputs = (txt_embedding, fixed_noise)
@@ -224,7 +224,7 @@ class GANTrainer(object):
                      Total Time: %.2fsec
                   '''
                   % (epoch, self.max_epoch, i, len(data_loader),
-                     errD.data[0], errG.data[0], kl_loss.data[0],
+                     errD.data.item(), errG.data.item(), kl_loss.data.item(),
                      errD_real, errD_wrong, errD_fake, (end_t - start_t)))
             if epoch % self.snapshot_interval == 0:
                 save_model(netG, netD, epoch, self.model_dir)
