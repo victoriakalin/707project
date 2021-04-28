@@ -241,10 +241,15 @@ class GANTrainer(object):
         netG.eval()
 
         # Load text embeddings generated from the encoder
-        t_file = torchfile.load(datapath)
-        captions_list = t_file.raw_txt
-        embeddings = np.concatenate(t_file.fea_txt, axis=0)
-        num_embeddings = len(captions_list)
+        # t_file = torchfile.load(datapath)
+        # captions_list = t_file.raw_txt
+        # embeddings = np.concatenate(t_file.fea_txt, axis=0)
+        # num_embeddings = len(captions_list)
+        embeddings = np.array(pickle.load(open(datapath, 'rb'), encoding = 'latin1'))
+        embedding_ix = random.randint(0, embeddings.shape[1]-1)
+        embeddings = embeddings[:, embedding_ix, :]
+        # embeddings = np.concatenate(t_file.fea_txt, axis=0)
+        num_embeddings = len(embeddings)
         print('Successfully load sentences from: ', datapath)
         print('Total number of sentences:', num_embeddings)
         print('num_embeddings:', num_embeddings, embeddings.shape)
