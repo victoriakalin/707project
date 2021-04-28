@@ -12,6 +12,7 @@ import time
 
 import numpy as np
 import torchfile
+import pickle
 
 from miscc.config import cfg
 from miscc.utils import mkdir_p
