@@ -302,3 +302,148 @@ class STAGE2_D(nn.Module):
         img_embedding = self.encode_img(image)
 
         return img_embedding
+
+#################### Attention and Residual Generator Models ##################
+
+# TODO update to add residual connections
+class STAGE2_G_Residual(nn.Module):
+    def __init__(self, STAGE1_G):
+        super(STAGE2_G_Residual, self).__init__()
+        self.gf_dim = cfg.GAN.GF_DIM
+        self.ef_dim = cfg.GAN.CONDITION_DIM
+        self.z_dim = cfg.Z_DIM
+        self.STAGE1_G = STAGE1_G
+        # fix parameters of stageI GAN
+        for param in self.STAGE1_G.parameters():
+            param.requires_grad = False
+        self.define_module()
+
+    def _make_layer(self, block, channel_num):
+        layers = []
+        for i in range(cfg.GAN.R_NUM):
+            layers.append(block(channel_num))
+        return nn.Sequential(*layers)
+
+    def define_module(self):
+        ngf = self.gf_dim
+        # TEXT.DIMENSION -> GAN.CONDITION_DIM
+        self.ca_net = CA_NET()
+        # --> 4ngf x 16 x 16
+        self.encoder = nn.Sequential(
+            conv3x3(3, ngf),
+            nn.ReLU(True),
+            nn.Conv2d(ngf, ngf * 2, 4, 2, 1, bias=False),
+            nn.BatchNorm2d(ngf * 2),
+            nn.ReLU(True),
+            nn.Conv2d(ngf * 2, ngf * 4, 4, 2, 1, bias=False),
+            nn.BatchNorm2d(ngf * 4),
+            nn.ReLU(True))
+        self.hr_joint = nn.Sequential(
+            conv3x3(self.ef_dim + ngf * 4, ngf * 4),
+            nn.BatchNorm2d(ngf * 4),
+            nn.ReLU(True))
+        self.residual = self._make_layer(ResBlock, ngf * 4)
+        # --> 2ngf x 32 x 32
+        self.upsample1 = upBlock(ngf * 4, ngf * 2)
+        # --> ngf x 64 x 64
+        self.upsample2 = upBlock(ngf * 2, ngf)
+        # --> ngf // 2 x 128 x 128
+        self.upsample3 = upBlock(ngf, ngf // 2)
+        # --> ngf // 4 x 256 x 256
+        self.upsample4 = upBlock(ngf // 2, ngf // 4)
+        # --> 3 x 256 x 256
+        self.img = nn.Sequential(
+            conv3x3(ngf // 4, 3),
+            nn.Tanh())
+
+    def forward(self, text_embedding, noise):
+        _, stage1_img, _, _ = self.STAGE1_G(text_embedding, noise)
+        stage1_img = stage1_img.detach()
+        encoded_img = self.encoder(stage1_img)
+
+        c_code, mu, logvar = self.ca_net(text_embedding)
+        c_code = c_code.view(-1, self.ef_dim, 1, 1)
+        c_code = c_code.repeat(1, 1, 16, 16)
+        i_c_code = torch.cat([encoded_img, c_code], 1)
+        h_code = self.hr_joint(i_c_code)
+        h_code = self.residual(h_code)
+
+        h_code = self.upsample1(h_code)
+        h_code = self.upsample2(h_code)
+        h_code = self.upsample3(h_code)
+        h_code = self.upsample4(h_code)
+
+        fake_img = self.img(h_code)
+        return stage1_img, fake_img, mu, logvar
+
+
+# TODO update to add attention-based connections
+class STAGE2_G_Attention(nn.Module):
+    def __init__(self, STAGE1_G):
+        super(STAGE2_G_Attention, self).__init__()
+        self.gf_dim = cfg.GAN.GF_DIM
+        self.ef_dim = cfg.GAN.CONDITION_DIM
+        self.z_dim = cfg.Z_DIM
+        self.STAGE1_G = STAGE1_G
+        # fix parameters of stageI GAN
+        for param in self.STAGE1_G.parameters():
+            param.requires_grad = False
+        self.define_module()
+
+    def _make_layer(self, block, channel_num):
+        layers = []
+        for i in range(cfg.GAN.R_NUM):
+            layers.append(block(channel_num))
+        return nn.Sequential(*layers)
+
+    def define_module(self):
+        ngf = self.gf_dim
+        # TEXT.DIMENSION -> GAN.CONDITION_DIM
+        self.ca_net = CA_NET()
+        # --> 4ngf x 16 x 16
+        self.encoder = nn.Sequential(
+            conv3x3(3, ngf),
+            nn.ReLU(True),
+            nn.Conv2d(ngf, ngf * 2, 4, 2, 1, bias=False),
+            nn.BatchNorm2d(ngf * 2),
+            nn.ReLU(True),
+            nn.Conv2d(ngf * 2, ngf * 4, 4, 2, 1, bias=False),
+            nn.BatchNorm2d(ngf * 4),
+            nn.ReLU(True))
+        self.hr_joint = nn.Sequential(
+            conv3x3(self.ef_dim + ngf * 4, ngf * 4),
+            nn.BatchNorm2d(ngf * 4),
+            nn.ReLU(True))
+        self.residual = self._make_layer(ResBlock, ngf * 4)
+        # --> 2ngf x 32 x 32
+        self.upsample1 = upBlock(ngf * 4, ngf * 2)
+        # --> ngf x 64 x 64
+        self.upsample2 = upBlock(ngf * 2, ngf)
+        # --> ngf // 2 x 128 x 128
+        self.upsample3 = upBlock(ngf, ngf // 2)
+        # --> ngf // 4 x 256 x 256
+        self.upsample4 = upBlock(ngf // 2, ngf // 4)
+        # --> 3 x 256 x 256
+        self.img = nn.Sequential(
+            conv3x3(ngf // 4, 3),
+            nn.Tanh())
+
+    def forward(self, text_embedding, noise):
+        _, stage1_img, _, _ = self.STAGE1_G(text_embedding, noise)
+        stage1_img = stage1_img.detach()
+        encoded_img = self.encoder(stage1_img)
+
+        c_code, mu, logvar = self.ca_net(text_embedding)
+        c_code = c_code.view(-1, self.ef_dim, 1, 1)
+        c_code = c_code.repeat(1, 1, 16, 16)
+        i_c_code = torch.cat([encoded_img, c_code], 1)
+        h_code = self.hr_joint(i_c_code)
+        h_code = self.residual(h_code)
+
+        h_code = self.upsample1(h_code)
+        h_code = self.upsample2(h_code)
+        h_code = self.upsample3(h_code)
+        h_code = self.upsample4(h_code)
+
+        fake_img = self.img(h_code)
+        return stage1_img, fake_img, mu, logvar
