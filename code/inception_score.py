@@ -100,6 +100,9 @@ if __name__ == '__main__':
     # print (inception_score(IgnoreLabelDataset(cifar), cuda=True, batch_size=32, resize=True, splits=10))
     print("load data...")
     np_imgs = np.load('test_imgs.npy')
+    # normalize images
+    np_imgs = (np_imgs - np_imgs.mean(axis=(0,1,2), keepdims=True))/ np_imgs.std(axis = (0,1,2), keepdims = True)
+
 
     print ("Calculating Inception Score...")
     print (inception_score(np_imgs, cuda=True, batch_size=32, resize=True, splits=10))
