@@ -300,5 +300,5 @@ class GANTrainer(object):
                 im = Image.fromarray(im)
                 im.save(save_name)
             count += batch_size
-    np.save('test_img.npy', np.array(test_imgs))
+        np.save('test_imgs.npy', np.array(test_imgs))
 
