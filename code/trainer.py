@@ -125,11 +125,11 @@ class GANTrainer(object):
         batch_size = self.batch_size
         noise = Variable(torch.FloatTensor(batch_size, nz))
         fixed_noise = \
-            Variable(torch.FloatTensor(batch_size, nz).normal_(0, 1),
-                     volatile=True)
+            Variable(torch.FloatTensor(batch_size, nz).normal_(0, 1))
         real_labels = Variable(torch.FloatTensor(batch_size).fill_(1))
         fake_labels = Variable(torch.FloatTensor(batch_size).fill_(0))
         if cfg.CUDA:
+            with torch.no_grad():
             noise, fixed_noise = noise.cuda(), fixed_noise.cuda()
             real_labels, fake_labels = real_labels.cuda(), fake_labels.cuda()
 
