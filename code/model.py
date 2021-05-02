@@ -471,11 +471,11 @@ class STAGE2_D(nn.Module):
 
 #         # h_code is now ngf x 64 x 64
 #         conv_s1 = self.conv_res1(stage1_img)
-#         conv_s1 = nn.ReLU(self.bn_res1(conv_s1))
+#         conv_s1 = nn.functional.relu(self.bn_res1(conv_s1))
 #         conv_s3 = self.conv_res3(stage1_img)
-#         conv_s3 = nn.ReLU(self.bn_res3(conv_s3))
+#         conv_s3 = nn.functional.relu(self.bn_res3(conv_s3))
 #         conv_s5 = self.conv_res5(stage1_img)
-#         conv_s5 = nn.ReLU(self.bn_res5(conv_s5))
+#         conv_s5 = nn.functional.relu(self.bn_res5(conv_s5))
 
 #         # inception_out should be 3ngf x 64 x 64
 #         inception_out = torch.cat((conv_s1, conv_s3, conv_s5), 1)

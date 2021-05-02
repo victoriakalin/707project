@@ -130,8 +130,8 @@ class GANTrainer(object):
         fake_labels = Variable(torch.FloatTensor(batch_size).fill_(0))
         if cfg.CUDA:
             with torch.no_grad():
-            noise, fixed_noise = noise.cuda(), fixed_noise.cuda()
-            real_labels, fake_labels = real_labels.cuda(), fake_labels.cuda()
+                noise, fixed_noise = noise.cuda(), fixed_noise.cuda()
+                real_labels, fake_labels = real_labels.cuda(), fake_labels.cuda()
 
         generator_lr = cfg.TRAIN.GENERATOR_LR
         discriminator_lr = cfg.TRAIN.DISCRIMINATOR_LR
@@ -286,7 +286,7 @@ class GANTrainer(object):
             inputs = (txt_embedding, noise)
             _, fake_imgs, mu, logvar = \
                 nn.parallel.data_parallel(netG, inputs, self.gpus)
-            
+
             for i in range(batch_size):
                 # print(count+i, captions_batch[i])
                 save_name = '%s/%d.png' % (save_dir, count + i)
