@@ -130,8 +130,8 @@ class GANTrainer(object):
         fake_labels = Variable(torch.FloatTensor(batch_size).fill_(0))
         if cfg.CUDA:
             with torch.no_grad():
-            noise, fixed_noise = noise.cuda(), fixed_noise.cuda()
-            real_labels, fake_labels = real_labels.cuda(), fake_labels.cuda()
+                noise, fixed_noise = noise.cuda(), fixed_noise.cuda()
+                real_labels, fake_labels = real_labels.cuda(), fake_labels.cuda()
 
         generator_lr = cfg.TRAIN.GENERATOR_LR
         discriminator_lr = cfg.TRAIN.DISCRIMINATOR_LR
