@@ -561,12 +561,12 @@ class STAGE2_G(nn.Module):
         # attention mechanism between encoded_img & test_embedding?
         encoded_vecs = encoded_img.view((bs, D, -1)).permute(0, 2, 1)
         # encoded_vecs should be N x 256 x 768
-        projected_text = nn.functional.tanh(self.text_proj(text_embedding))
+        projected_text = torch.tanh(self.text_proj(text_embedding))
         # projected_text should now be N x 768
         projected_text = projected_text.view((bs, 1, D)).repeat(1, 256, 1)
         # projected_text should now be N x 256 x 768
         image_text_dot = (encoded_vecs * projected_text).sum(dim=-1)
-        image_text_attn = torch.nn.softmax(image_text_dot, dim=-1)
+        image_text_attn = torch.nn.functional.softmax(image_text_dot, dim=-1)
         # image_text_attn: N x 256 -> scores of how much the text encoding
         # lines up with each vision region
         image_text_attn_rep = image_text_attn.view(bs, 256, 1).repeat(1, 1, 768)
