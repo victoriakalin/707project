@@ -287,9 +287,11 @@ class GANTrainer(object):
             _, fake_imgs, mu, logvar = \
                 nn.parallel.data_parallel(netG, inputs, self.gpus)
             
+
             for i in range(batch_size):
                 # print(count+i, captions_batch[i])
                 save_name = '%s/%d.png' % (save_dir, count + i)
+                save_name_s1 = '%s/%d_s1.png' % (save_dir, count + i)
                 im = fake_imgs[i].data.cpu().numpy()
                 im = (im + 1.0) * 127.5
                 im = im.astype(np.uint8)
@@ -299,6 +301,15 @@ class GANTrainer(object):
                 # print('im', im.shape)
                 im = Image.fromarray(im)
                 im.save(save_name)
+                # stage 1
+                im_1 = stage_1_img[i].data.cpu().numpy()
+                im_1 = (im_1 + 1.0) * 127.5
+                im_1 = im_1.astype(np.uint8)
+                # print('im', im.shape)
+                test_imgs_s1.append(im_1)
+                im_1 = np.transpose(im_1, (1, 2, 0))
+                # print('im', im.shape)
+                im_1 = Image.fromarray(im_1)
+                im_1.save(save_name_s1)
             count += batch_size
         np.save('test_imgs.npy', np.array(test_imgs))
-
