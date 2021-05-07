@@ -264,9 +264,9 @@ class GANTrainer(object):
         noise = Variable(torch.FloatTensor(batch_size, nz))
         if cfg.CUDA:
             noise = noise.cuda()
-        count = 0
+        count = 0         
+        test_imgs = []
         while count < num_embeddings:
-            test_imgs = []
             if count > 3000:
                 break
             iend = count + batch_size
@@ -284,10 +284,10 @@ class GANTrainer(object):
             ######################################################
             noise.data.normal_(0, 1)
             inputs = (txt_embedding, noise)
-            _, fake_imgs, mu, logvar = \
+            stage_1_img, fake_imgs, mu, logvar = \
                 nn.parallel.data_parallel(netG, inputs, self.gpus)
             
-
+            test_imgs_s1 = []
             for i in range(batch_size):
                 # print(count+i, captions_batch[i])
                 save_name = '%s/%d.png' % (save_dir, count + i)
